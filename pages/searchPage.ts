@@ -35,43 +35,46 @@ async filterByColor(color: string) {
 }
 
 async sortByPriceAsc() {
-  await this.page.waitForTimeout(2000);
-
-  // Abrir dropdown y hacer click via JS directo
-  await this.page.evaluate(() => {
-    const btn = document.querySelector('a#sortby') as HTMLElement;
-    if (btn) btn.click();
-  });
-  await this.page.waitForTimeout(1000);
-
-  await this.page.evaluate(() => {
-    const buttons = Array.from(document.querySelectorAll('button.dropdown-item'));
-    const menor = buttons.find(b => b.textContent?.includes('Menor precio')) as HTMLElement;
-    if (menor) menor.click();
-  });
-
-  await this.page.waitForTimeout(3000);
+  // Navegar directamente con filtro de color y orden aplicados
+  await this.page.goto('/tienda?s=playstation+5&facet=variants.normalizedColor%3ABlanco~~%23ffffff&sort=sortPrice%7C0');
+  await this.page.waitForLoadState('domcontentloaded');
+  await this.page.waitForTimeout(5000);
 }
 
- async getFirstNProducts(n: number): Promise<Product[]> {
+async getFirstNProducts(n: number): Promise<Product[]> {
   await this.page.waitForTimeout(3000);
 
   const products: Product[] = [];
-  const productCards = this.page.locator('li.m-product__card');
 
-  await productCards.first().waitFor({ timeout: 15000 });
-  const count = await productCards.count();
+  // Intentar selector principal primero, luego fallback
+  let productCards = this.page.locator('li.m-product__card');
+  let count = await productCards.count();
+
+  if (count === 0) {
+    productCards = this.page.locator('[class*="product__card"], [class*="productCard"], [class*="m-product"]');
+    count = await productCards.count();
+  }
+
   console.log(`📦 Tarjetas encontradas: ${count}`);
 
+  if (count === 0) {
+    console.warn('⚠️ No se encontraron tarjetas de producto');
+    return products;
+  }
+
   for (let i = 0; i < Math.min(n, count); i++) {
-    const card = productCards.nth(i);
-    const name = await card.locator('h3.card-title.a-card-description').innerText({ timeout: 5000 });
-    const priceMain = await card.locator('p.a-card-discount').innerText({ timeout: 5000 });
-    const priceCents = await card.locator('p.a-card-discount sup').innerText({ timeout: 5000 }).catch(() => '00');
-    const price = `${priceMain.replace(priceCents, '').trim()}.${priceCents}`;
-    products.push({ name: name.trim(), price: price.trim() });
+    try {
+      const card = productCards.nth(i);
+      const name = await card.locator('h3.card-title.a-card-description').innerText({ timeout: 5000 });
+      const priceMain = await card.locator('p.a-card-discount').innerText({ timeout: 5000 });
+      const priceCents = await card.locator('p.a-card-discount sup').innerText({ timeout: 5000 }).catch(() => '00');
+      const price = `${priceMain.replace(priceCents, '').trim()}.${priceCents}`;
+      products.push({ name: name.trim(), price: price.trim() });
+    } catch (e) {
+      console.warn(`⚠️ Error extrayendo producto ${i + 1}`);
+    }
   }
 
   return products;
-  }
+}
 }
