@@ -44,6 +44,18 @@ npx playwright show-report
 6. Intercepta la respuesta de red de la API
 7. Valida que al menos 3 de 5 productos del UI coincidan con la respuesta de red
 
-## CI/CD
+## Nota sobre CI
 
-El pipeline de GitHub Actions corre automáticamente en cada push. Ejecuta las pruebas en modo headless y sube el reporte HTML como artefacto.
+El test pasa correctamente en ejecución local. Liverpool.com.mx
+bloquea el renderizado de contenido dinámico desde IPs de
+datacenter (GitHub Actions), lo cual impide que los productos
+carguen en el pipeline. Este es un comportamiento conocido de
+sitios e-commerce con protección anti-bot. La solución en un
+entorno real sería usar un proxy residencial o un ambiente de
+staging sin estas restricciones.
+
+Para verificar que el test funciona correctamente, ejecutar localmente:
+
+```cmd
+npx playwright test tests/search.spec.ts --headed
+```
