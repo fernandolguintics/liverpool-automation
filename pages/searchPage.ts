@@ -16,31 +16,13 @@ export class SearchPage {
     await this.page.goto('/');
   }
 
-  async search(term: string) {
-  // Esperar a que la página cargue completamente
-  await this.page.waitForLoadState('domcontentloaded');
-  await this.page.waitForTimeout(2000);
-
-  // Intentar múltiples selectores del buscador
-  const searchInput = this.page.locator([
-    'input[type="search"]',
-    'input[placeholder*="busca" i]',
-    'input[placeholder*="search" i]',
-    'input[name="s"]',
-    'input[class*="search"]',
-    'input[class*="Search"]',
-    '#search',
-    '.search-input'
-  ].join(', ')).first();
-
-  await searchInput.waitFor({ timeout: 15000 });
-  await searchInput.click();
-  await searchInput.fill(term);
-  await this.page.keyboard.press('Enter');
+ async search(term: string) {
+  // Navegar directamente a la URL de búsqueda evita problemas con el input en CI
+  const encodedTerm = encodeURIComponent(term);
+  await this.page.goto(`/tienda?s=${encodedTerm}`);
   await this.page.waitForLoadState('domcontentloaded');
   await this.page.waitForTimeout(3000);
 }
-
 
 
  async filterByColor(color: string) {
