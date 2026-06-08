@@ -25,15 +25,13 @@ export class SearchPage {
 }
 
 
- async filterByColor(color: string) {
-  await this.page.waitForTimeout(3000);
-  
-  const colorFilter = this.page.locator(`a#variants-normalizedColor-${color}`);
-  await colorFilter.waitFor({ timeout: 15000 });
-  await colorFilter.scrollIntoViewIfNeeded();
-  await colorFilter.click();
+async filterByColor(color: string) {
+  // Navegar directamente con el filtro de color en la URL
+  const currentUrl = this.page.url();
+  const encodedColor = encodeURIComponent(`${color}~~#ffffff`);
+  await this.page.goto(`/tienda?s=playstation+5&facet=variants.normalizedColor%3A${encodedColor}`);
   await this.page.waitForLoadState('domcontentloaded');
-  await this.page.waitForTimeout(2000);
+  await this.page.waitForTimeout(3000);
 }
 
 async sortByPriceAsc() {
