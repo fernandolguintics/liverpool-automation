@@ -17,15 +17,31 @@ export class SearchPage {
   }
 
   async search(term: string) {
-  await this.page.getByRole('combobox', { name: /buscar/i })
-    .or(this.page.locator('input[type="search"]'))
-    .or(this.page.locator('input[placeholder*="busca" i]'))
-    .first()
-    .fill(term);
+  // Esperar a que la página cargue completamente
+  await this.page.waitForLoadState('domcontentloaded');
+  await this.page.waitForTimeout(2000);
+
+  // Intentar múltiples selectores del buscador
+  const searchInput = this.page.locator([
+    'input[type="search"]',
+    'input[placeholder*="busca" i]',
+    'input[placeholder*="search" i]',
+    'input[name="s"]',
+    'input[class*="search"]',
+    'input[class*="Search"]',
+    '#search',
+    '.search-input'
+  ].join(', ')).first();
+
+  await searchInput.waitFor({ timeout: 15000 });
+  await searchInput.click();
+  await searchInput.fill(term);
   await this.page.keyboard.press('Enter');
   await this.page.waitForLoadState('domcontentloaded');
   await this.page.waitForTimeout(3000);
 }
+
+
 
  async filterByColor(color: string) {
   await this.page.waitForTimeout(3000);
