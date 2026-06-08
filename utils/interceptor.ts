@@ -1,5 +1,5 @@
 import { Page } from '@playwright/test';
-import { Product } from '../pages/SearchPage';
+import { Product } from '../pages/searchPage';
 
 export interface InterceptedProduct {
   name: string;

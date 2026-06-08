@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { SearchPage } from '../pages/SearchPage';
+import { SearchPage } from '../pages/searchPage';
 import { crossValidate } from '../utils/interceptor';
 
 test.describe('Liverpool - Búsqueda PS5', () => {
